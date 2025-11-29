@@ -1,5 +1,5 @@
 """
-FastAPI 接口 - 网格逻辑拼图求解器
+FastAPI 接口 - 终末地拼图求解器
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

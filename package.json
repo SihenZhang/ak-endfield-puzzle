@@ -2,7 +2,7 @@
   "name": "ak-endfield-puzzle",
   "version": "0.1.0",
   "private": true,
-  "description": "终末地拼图谜题求解器 - 可视化拼图编辑与自动求解前端",
+  "description": "终末地拼图解谜工具 - 可视化拼图编辑与自动求解前端",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

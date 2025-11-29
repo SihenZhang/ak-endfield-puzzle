@@ -295,7 +295,7 @@ export default function Home() {
       <Toaster />
       <div className="mx-auto max-w-[1800px]">
         <div className="mb-6 flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-bold">终末地拼图谜题求解器</h1>
+          <h1 className="text-3xl font-bold">终末地拼图解谜工具</h1>
           <Tooltip>
             <TooltipTrigger asChild>
               <a
