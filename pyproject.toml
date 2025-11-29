@@ -1,0 +1,10 @@
+[project]
+name = "ak-endfield-puzzle"
+version = "0.1.0"
+description = "终末地拼图谜题求解器 - 基于 OR-Tools CP-SAT 的自动求解后端"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.122.0",
+    "ortools>=9.14.6206",
+]
