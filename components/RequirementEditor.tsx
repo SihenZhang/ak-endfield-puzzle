@@ -3,6 +3,7 @@
 import type { ColorRequirement } from '@/lib/types'
 import { HelpCircleIcon } from 'lucide-react'
 import { useMemo } from 'react'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -74,7 +75,7 @@ export function RequirementEditor({
 
         return (
           <div key={color.id} className="flex items-center gap-3">
-            <div className="flex items-center gap-2 w-16">
+            <div className="flex items-center gap-2 w-20">
               <div className={cn('size-4 rounded shrink-0', color.bgClass)} />
               <Label className={cn(
                 'text-sm whitespace-nowrap',
@@ -83,6 +84,20 @@ export function RequirementEditor({
               >
                 {color.name}
               </Label>
+              {lockedMin > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircleIcon className="size-3.5 text-muted-foreground shrink-0 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <span>
+                      其中
+                      {lockedMin}
+                      个来自锁定块
+                    </span>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
             <div className="flex items-center gap-1 flex-1 min-w-0">
               <Slider
@@ -94,27 +109,25 @@ export function RequirementEditor({
                 disabled={isDisabled}
                 className={cn('flex-1', isDisabled && 'opacity-50')}
               />
-              <div className={cn(
-                'flex items-center justify-end gap-1 w-7',
-                isDisabled && 'text-muted-foreground',
-              )}
-              >
-                <span className="text-sm tabular-nums">{currentValue}</span>
-                {lockedMin > 0 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircleIcon className="size-3.5 text-muted-foreground shrink-0 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <span>
-                        其中
-                        {lockedMin}
-                        个来自锁定块
-                      </span>
-                    </TooltipContent>
-                  </Tooltip>
+              <Input
+                type="number"
+                value={currentValue}
+                onChange={(e) => {
+                  const parsed = Number.parseInt(e.target.value, 10)
+                  if (!Number.isNaN(parsed)) {
+                    // 限制在 lockedMin 到 colorMax 之间
+                    const clamped = Math.min(Math.max(parsed, lockedMin), colorMax)
+                    handleChange(color.id, clamped)
+                  }
+                }}
+                min={lockedMin}
+                max={colorMax}
+                disabled={isDisabled}
+                className={cn(
+                  'w-10 h-6 px-1 text-center text-sm tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+                  isDisabled && 'text-muted-foreground',
                 )}
-              </div>
+              />
             </div>
           </div>
         )
