@@ -25,7 +25,7 @@ export function PieceList({
   return (
     <div className="flex flex-col gap-3 rounded-lg border bg-card p-4">
       <h3 className="text-sm font-semibold">拼图块</h3>
-      <ScrollArea className="h-[calc(100vh-20rem)]">
+      <ScrollArea className="h-[calc(100vh-22rem)]">
         <div className="grid grid-cols-2 gap-3 pr-4">
           {pieces.map((piece, index) => (
             <PieceCard

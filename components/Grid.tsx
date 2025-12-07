@@ -45,15 +45,20 @@ export function Grid({
   const [editingRow, setEditingRow] = useState<number | null>(null)
   const [editingCol, setEditingCol] = useState<number | null>(null)
 
-  // Build a map from piece ID to color
+  // Build a map from piece ID to color and index
   const pieceColorMap = new Map<number, ColorId>()
-  pieces.forEach(piece => pieceColorMap.set(piece.id, piece.color))
+  const pieceIndexMap = new Map<number, number>()
+  pieces.forEach((piece, index) => {
+    pieceColorMap.set(piece.id, piece.color)
+    pieceIndexMap.set(piece.id, index + 1) // 1-based index for display
+  })
 
   // Build a map of which cells belong to which piece
-  const cellToPiece = new Map<string, { id: number, color: ColorId }>()
+  const cellToPiece = new Map<string, { id: number, index: number, color: ColorId }>()
   if (placements) {
     for (const placement of placements) {
       const color = pieceColorMap.get(placement.id) || 0
+      const index = pieceIndexMap.get(placement.id) || 0
       for (const offset of placement.shape) {
         const cellCoord: Coord = [
           placement.anchor[0] + offset[0],
@@ -61,6 +66,7 @@ export function Grid({
         ]
         cellToPiece.set(coordToKey(cellCoord), {
           id: placement.id,
+          index,
           color,
         })
       }
@@ -140,7 +146,7 @@ export function Grid({
       cellClass = `${color.bgClass} opacity-70`
       cellContent = (
         <span className="text-xs font-semibold text-white">
-          {placement.id}
+          {placement.index}
         </span>
       )
     }

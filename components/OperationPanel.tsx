@@ -1,6 +1,6 @@
 'use client'
 
-import { Eraser, RotateCcw, Sparkles } from 'lucide-react'
+import { Eraser, ImageUp, RotateCcw, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 
@@ -10,6 +10,7 @@ interface OperationPanelProps {
   onSolve: () => void
   onClearSolution: () => void
   onClear: () => void
+  onUpload: () => void
 }
 
 export function OperationPanel({
@@ -18,6 +19,7 @@ export function OperationPanel({
   onSolve,
   onClearSolution,
   onClear,
+  onUpload,
 }: OperationPanelProps) {
   const [clearArmed, setClearArmed] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -80,6 +82,15 @@ export function OperationPanel({
               {isSolving ? '求解中...' : '解题'}
             </Button>
           )}
+      <Button
+        className="w-full"
+        variant="outline"
+        onClick={onUpload}
+        disabled={isSolving || isSolved}
+      >
+        <ImageUp className="size-4" />
+        上传截图解析
+      </Button>
       <Button
         className="w-full"
         variant={clearArmed ? 'destructive' : 'outline'}

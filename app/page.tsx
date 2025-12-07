@@ -1,16 +1,18 @@
 'use client'
 
 import type { ToolMode } from '@/components/Toolbar'
-import type { ColorId, ColorRequirement, Coord, Piece, PlacedPiece } from '@/lib/types'
+import type { ColorId, ColorRequirement, Coord, Piece, PlacedPiece, Puzzle } from '@/lib/types'
 import { Github } from 'lucide-react'
 import { useState } from 'react'
-import { toast, Toaster } from 'sonner'
+import { toast } from 'sonner'
 import { Grid } from '@/components/Grid'
+import { LoadPuzzleDialog } from '@/components/LoadPuzzleDialog'
 import { OperationPanel } from '@/components/OperationPanel'
 import { PieceEditorDialog } from '@/components/PieceEditorDialog'
 import { PieceList } from '@/components/PieceList'
 import { Toolbar } from '@/components/Toolbar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { UploadDialog } from '@/components/UploadDialog'
 import { solvePuzzle } from '@/lib/api'
 import { DEFAULT_COLOR_ID } from '@/lib/colors'
 import { coordToKey, keyToCoord } from '@/lib/utils'
@@ -43,6 +45,43 @@ export default function Home() {
   const [isSolved, setIsSolved] = useState(false)
   const [isSolving, setIsSolving] = useState(false)
   const [placements, setPlacements] = useState<PlacedPiece[] | undefined>()
+
+  // Upload & parse state
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
+  const [parsedPuzzle, setParsedPuzzle] = useState<Puzzle | null>(null)
+  const [loadDialogOpen, setLoadDialogOpen] = useState(false)
+
+  const applyParsedPuzzle = (puzzle: Puzzle) => {
+    setRows(puzzle.rows)
+    setCols(puzzle.cols)
+    setObstacles(new Set(puzzle.obstacles.map(coordToKey)))
+
+    const newLocked = new Map<string, ColorId>()
+    puzzle.lockedBlocks.forEach(({ coord, color }) => {
+      newLocked.set(coordToKey(coord), color)
+    })
+    setLocked(newLocked)
+
+    setRowRequirements(puzzle.rowRequirements)
+    setColRequirements(puzzle.colRequirements)
+    setPieces(puzzle.pieces)
+    const nextId = puzzle.pieces.reduce((max, p) => Math.max(max, p.id), 0) + 1
+    setNextPieceId(nextId)
+
+    setIsSolved(false)
+    setPlacements(undefined)
+    setToolMode('none')
+    setParsedPuzzle(null)
+    setLoadDialogOpen(false)
+    toast.success('已加载解析结果')
+  }
+
+  const isCurrentPuzzleEmpty = () =>
+    obstacles.size === 0
+    && locked.size === 0
+    && pieces.length === 0
+    && rowRequirements.every(req => Object.keys(req).length === 0)
+    && colRequirements.every(req => Object.keys(req).length === 0)
 
   // Handle grid size changes
   const handleRowsChange = (newRows: number) => {
@@ -237,7 +276,7 @@ export default function Home() {
     setIsSolving(true)
 
     try {
-      const response = await solvePuzzle({
+      const result = await solvePuzzle({
         rows,
         cols,
         obstacles: Array.from(obstacles).map(keyToCoord),
@@ -250,17 +289,12 @@ export default function Home() {
         pieces,
       })
 
-      if (response.success && response.placements) {
-        setIsSolved(true)
-        setPlacements(response.placements)
-        toast.success('求解成功！')
-      }
-      else {
-        toast.error(response.message || '求解失败')
-      }
+      setIsSolved(true)
+      setPlacements(result)
+      toast.success('求解成功！')
     }
-    catch {
-      toast.error('求解时发生错误')
+    catch (error) {
+      toast.error(error instanceof Error ? error.message : '求解失败')
     }
     finally {
       setIsSolving(false)
@@ -290,9 +324,30 @@ export default function Home() {
     toast.success('已清空')
   }
 
+  const handleUploadOpen = () => {
+    setUploadDialogOpen(true)
+  }
+
+  const handleUploadParsed = (puzzle: Puzzle) => {
+    if (isCurrentPuzzleEmpty()) {
+      setUploadDialogOpen(false)
+      applyParsedPuzzle(puzzle)
+      return
+    }
+
+    setParsedPuzzle(puzzle)
+    setLoadDialogOpen(true)
+    setUploadDialogOpen(false)
+  }
+
+  const handleConfirmLoadPuzzle = () => {
+    if (!parsedPuzzle)
+      return
+    applyParsedPuzzle(parsedPuzzle)
+  }
+
   return (
     <div className="min-h-screen bg-background p-6">
-      <Toaster />
       <div className="mx-auto max-w-[1800px]">
         <div className="mb-6 flex items-center justify-between gap-3">
           <h1 className="text-3xl font-bold">终末地拼图解谜工具</h1>
@@ -363,6 +418,7 @@ export default function Home() {
               onSolve={handleSolve}
               onClearSolution={handleClearSolution}
               onClear={handleClear}
+              onUpload={handleUploadOpen}
             />
 
             <PieceList
@@ -381,6 +437,19 @@ export default function Home() {
         piece={editingPiece || undefined}
         onSave={handleSavePiece}
         onClose={() => setPieceDialogOpen(false)}
+      />
+
+      <UploadDialog
+        open={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+        onParsed={handleUploadParsed}
+      />
+
+      <LoadPuzzleDialog
+        open={loadDialogOpen}
+        puzzle={parsedPuzzle}
+        onConfirm={handleConfirmLoadPuzzle}
+        onClose={() => setLoadDialogOpen(false)}
       />
     </div>
   )

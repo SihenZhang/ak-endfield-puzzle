@@ -11,7 +11,7 @@ export interface Piece {
 }
 
 // Row/Column requirements: key=color id, value=count
-export type ColorRequirement = Record<number, number>
+export type ColorRequirement = Record<ColorId, number>
 
 export interface Puzzle {
   rows: number
@@ -28,10 +28,4 @@ export interface PlacedPiece {
   id: number
   anchor: Coord // absolute grid coord where piece's [0,0] is placed
   shape: Coord[] // relative offsets from anchor (includes [0,0])
-}
-
-export interface SolveResponse {
-  success: boolean
-  message?: string
-  placements?: PlacedPiece[]
 }
